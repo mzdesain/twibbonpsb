@@ -51,15 +51,15 @@
   <style>@view-transition { navigation: auto; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full bg-gray-50">
+ <body class="h-full" style="background: linear-gradient(135deg, #1c432c 0%, #f5d746 100%);">
   <div class="w-full h-full overflow-auto">
    <div class="min-h-full w-full" id="main-wrapper">
     <div class="max-w-4xl mx-auto px-6 py-12"><!-- Header -->
      <div class="text-center mb-8">
-      <h1 id="main-title" class="text-4xl font-bold mb-2 text-gray-800">PSB 2026-2027</h1>
-      <p id="subtitle" class="text-xl text-gray-600">Pontren Jamaluddin Bagik Nyaka</p>
+      <h1 id="main-title" class="text-4xl font-bold mb-2 text-white">PSB 2026-2027</h1>
+      <p id="subtitle" class="text-xl text-white">Pontren Jamaluddin Bagik Nyaka</p>
      </div><!-- Instruction -->
-     <p id="instruction" class="text-center text-base mb-8 text-gray-700">Upload foto Anda dan download twibbon untuk dibagikan di media sosial!</p><!-- Preview Container -->
+     <p id="instruction" class="text-center text-base mb-8 text-white">Upload foto Anda dan download twibbon untuk dibagikan di media sosial!</p><!-- Preview Container -->
      <div class="mb-8">
       <div id="preview-container"><img id="user-photo" class="hidden" alt="Foto Anda"> <!-- 
               GANTI LINK TEMPLATE TWIBBON DI BAWAH INI
@@ -75,37 +75,19 @@
       </div>
      </div><!-- Controls -->
      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10"><input type="file" id="photo-input" accept="image/*" class="hidden"> <button id="upload-btn" class="px-6 py-3 rounded-lg font-semibold text-base shadow-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"> <i class="fas fa-upload mr-2"></i><span id="upload-btn-text">Pilih Foto</span> </button> <button id="download-btn" class="hidden px-6 py-3 rounded-lg font-semibold text-base shadow-md text-white bg-green-600 hover:bg-green-700 transition-colors"> <i class="fas fa-download mr-2"></i><span id="download-btn-text">Download Twibbon</span> </button>
-     </div><!-- Tips Section -->
-     <div class="mt-12 max-w-2xl mx-auto">
-      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-       <h3 class="font-bold text-xl mb-4 text-gray-800"><i class="fas fa-lightbulb mr-2 text-yellow-500"></i>Tips untuk Hasil Terbaik</h3>
-       <div class="space-y-3">
-        <div class="flex items-start"><i class="fas fa-camera text-blue-500 mt-1 mr-3"></i>
-         <p class="text-gray-700">Gunakan foto dengan resolusi tinggi</p>
-        </div>
-        <div class="flex items-start"><i class="fas fa-bullseye text-red-500 mt-1 mr-3"></i>
-         <p class="text-gray-700">Pastikan wajah Anda berada di tengah foto</p>
-        </div>
-        <div class="flex items-start"><i class="fas fa-mobile-alt text-green-500 mt-1 mr-3"></i>
-         <p class="text-gray-700">Foto portrait (vertikal) lebih baik daripada landscape</p>
-        </div>
-        <div class="flex items-start"><i class="fas fa-sun text-orange-500 mt-1 mr-3"></i>
-         <p class="text-gray-700">Pastikan pencahayaan foto cukup baik</p>
-        </div>
-       </div>
-      </div>
      </div>
     </div>
    </div>
   </div>
   <script>
     const defaultConfig = {
-      background_color: '#f9fafb',
-      text_color: '#1f2937',
-      button_color: '#2563eb',
+      background_gradient_start: '#1c432c',
+      background_gradient_end: '#f5d746',
+      text_color: '#ffffff',
+      button_color: '#1c432c',
       font_family: 'system-ui, -apple-system, sans-serif',
       font_size: 16,
-      main_title: 'Selamat Datang Mahasiswa Baru',
+      main_title: 'PSB 2026-2027',
       subtitle: 'Universitas Indonesia 2024',
       instruction_text: 'Upload foto Anda dan download twibbon untuk dibagikan di media sosial!',
       upload_button_text: 'Pilih Foto',
@@ -116,11 +98,12 @@
       const baseFontStack = 'system-ui, -apple-system, sans-serif';
       const customFont = config.font_family || defaultConfig.font_family;
       const baseSize = config.font_size || defaultConfig.font_size;
-      const bgColor = config.background_color || defaultConfig.background_color;
+      const bgGradientStart = config.background_gradient_start || defaultConfig.background_gradient_start;
+      const bgGradientEnd = config.background_gradient_end || defaultConfig.background_gradient_end;
       const textColor = config.text_color || defaultConfig.text_color;
       const btnColor = config.button_color || defaultConfig.button_color;
       
-      document.body.style.backgroundColor = bgColor;
+      document.body.style.background = `linear-gradient(135deg, ${bgGradientStart} 0%, ${bgGradientEnd} 100%)`;
       
       const mainWrapper = document.getElementById('main-wrapper');
       mainWrapper.style.fontFamily = `${customFont}, ${baseFontStack}`;
@@ -177,10 +160,17 @@
         mapToCapabilities: (config) => ({
           recolorables: [
             {
-              get: () => config.background_color || defaultConfig.background_color,
+              get: () => config.background_gradient_start || defaultConfig.background_gradient_start,
               set: (value) => {
-                window.elementSdk.config.background_color = value;
-                window.elementSdk.setConfig({ background_color: value });
+                window.elementSdk.config.background_gradient_start = value;
+                window.elementSdk.setConfig({ background_gradient_start: value });
+              }
+            },
+            {
+              get: () => config.background_gradient_end || defaultConfig.background_gradient_end,
+              set: (value) => {
+                window.elementSdk.config.background_gradient_end = value;
+                window.elementSdk.setConfig({ background_gradient_end: value });
               }
             },
             {
@@ -253,10 +243,7 @@
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      const size = 1000;
-      canvas.width = size;
-      canvas.height = size;
-      
+      // Load foto user terlebih dahulu untuk mendapatkan dimensi aslinya
       const photoImg = new Image();
       photoImg.src = userPhoto.src;
       
@@ -264,8 +251,7 @@
         photoImg.onload = resolve;
       });
       
-      ctx.drawImage(photoImg, 0, 0, size, size);
-      
+      // Load frame twibbon untuk mendapatkan dimensi aslinya
       const frameImg = new Image();
       frameImg.src = document.getElementById('twibbon-frame').src;
       
@@ -273,17 +259,44 @@
         frameImg.onload = resolve;
       });
       
-      ctx.drawImage(frameImg, 0, 0, size, size);
+      // Gunakan ukuran yang lebih besar antara foto atau frame untuk kualitas terbaik
+      const targetSize = Math.max(photoImg.width, photoImg.height, frameImg.width, frameImg.height, 1080);
+      
+      canvas.width = targetSize;
+      canvas.height = targetSize;
+      
+      // Gambar foto user (dengan crop center untuk mempertahankan proporsi)
+      const photoAspect = photoImg.width / photoImg.height;
+      let drawWidth, drawHeight, offsetX, offsetY;
+      
+      if (photoAspect > 1) {
+        // Foto landscape
+        drawHeight = targetSize;
+        drawWidth = drawHeight * photoAspect;
+        offsetX = -(drawWidth - targetSize) / 2;
+        offsetY = 0;
+      } else {
+        // Foto portrait atau square
+        drawWidth = targetSize;
+        drawHeight = drawWidth / photoAspect;
+        offsetX = 0;
+        offsetY = -(drawHeight - targetSize) / 2;
+      }
+      
+      ctx.drawImage(photoImg, offsetX, offsetY, drawWidth, drawHeight);
+      
+      // Gambar frame twibbon di atas foto
+      ctx.drawImage(frameImg, 0, 0, targetSize, targetSize);
       
       canvas.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'twibbon-mahasiswa-baru.png';
+        a.download = 'twibbon-PSB-JB.png';
         a.click();
         URL.revokeObjectURL(url);
       }, 'image/png');
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9accd339e4d8fd84',t:'MTc2NTUzODM0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9acdab1c975ceba2',t:'MTc2NTU0NzE5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
