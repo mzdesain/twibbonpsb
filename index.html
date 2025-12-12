@@ -26,11 +26,10 @@
     
     #user-photo {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      top: 50%;
+      left: 50%;
+      transform-origin: center center;
+      max-width: none;
     }
     
     #twibbon-frame {
@@ -151,20 +150,6 @@
       
       const downloadBtnText = document.getElementById('download-btn-text');
       downloadBtnText.textContent = config.download_button_text || defaultConfig.download_button_text;
-      
-      const tipTexts = document.querySelectorAll('.space-y-3 p');
-      tipTexts.forEach(p => {
-        p.style.fontSize = `${baseSize}px`;
-        p.style.color = textColor;
-        p.style.fontFamily = `${customFont}, ${baseFontStack}`;
-      });
-      
-      const tipsHeading = document.querySelector('.mt-12 h3');
-      if (tipsHeading) {
-        tipsHeading.style.fontSize = `${baseSize * 1.25}px`;
-        tipsHeading.style.color = textColor;
-        tipsHeading.style.fontFamily = `${customFont}, ${baseFontStack}`;
-      }
     }
 
     if (window.elementSdk) {
@@ -246,6 +231,9 @@
       y: 0
     };
 
+    let photoAspectRatio = 1;
+    let containerSize = 0;
+
     function updatePhotoTransform() {
       const scalePercent = zoomSlider.value;
       const scale = scalePercent / 100;
@@ -256,7 +244,21 @@
       photoTransform.x = x;
       photoTransform.y = y;
       
-      userPhoto.style.transform = `scale(${scale}) translate(${x}%, ${y}%)`;
+      // Hitung ukuran foto berdasarkan aspect ratio
+      let photoWidth, photoHeight;
+      if (photoAspectRatio > 1) {
+        // Landscape
+        photoWidth = containerSize;
+        photoHeight = containerSize / photoAspectRatio;
+      } else {
+        // Portrait atau square
+        photoHeight = containerSize;
+        photoWidth = containerSize * photoAspectRatio;
+      }
+      
+      userPhoto.style.width = photoWidth + 'px';
+      userPhoto.style.height = photoHeight + 'px';
+      userPhoto.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%) scale(${scale})`;
       zoomValue.textContent = scalePercent;
     }
 
@@ -270,16 +272,26 @@
         const reader = new FileReader();
         reader.onload = (event) => {
           userPhoto.src = event.target.result;
-          userPhoto.classList.remove('hidden');
-          placeholder.classList.add('hidden');
-          downloadBtn.classList.remove('hidden');
-          adjustmentControls.classList.remove('hidden');
           
-          // Reset transform
-          zoomSlider.value = 100;
-          positionX.value = 0;
-          positionY.value = 0;
-          updatePhotoTransform();
+          userPhoto.onload = () => {
+            // Hitung aspect ratio foto
+            photoAspectRatio = userPhoto.naturalWidth / userPhoto.naturalHeight;
+            
+            // Dapatkan ukuran container
+            const container = document.getElementById('preview-container');
+            containerSize = container.offsetWidth;
+            
+            userPhoto.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            downloadBtn.classList.remove('hidden');
+            adjustmentControls.classList.remove('hidden');
+            
+            // Reset transform
+            zoomSlider.value = 100;
+            positionX.value = 0;
+            positionY.value = 0;
+            updatePhotoTransform();
+          };
         };
         reader.readAsDataURL(file);
       }
@@ -297,11 +309,10 @@
     });
 
     downloadBtn.addEventListener('click', async () => {
-      const container = document.getElementById('preview-container');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      // Load foto user terlebih dahulu untuk mendapatkan dimensi aslinya
+      // Load foto user
       const photoImg = new Image();
       photoImg.src = userPhoto.src;
       
@@ -309,7 +320,7 @@
         photoImg.onload = resolve;
       });
       
-      // Load frame twibbon untuk mendapatkan dimensi aslinya
+      // Load frame twibbon
       const frameImg = new Image();
       frameImg.src = document.getElementById('twibbon-frame').src;
       
@@ -317,7 +328,7 @@
         frameImg.onload = resolve;
       });
       
-      // Gunakan ukuran yang lebih besar antara foto atau frame untuk kualitas terbaik
+      // Gunakan ukuran yang lebih besar untuk kualitas terbaik
       const targetSize = Math.max(photoImg.width, photoImg.height, frameImg.width, frameImg.height, 1080);
       
       canvas.width = targetSize;
@@ -329,32 +340,28 @@
       // Pindahkan origin ke tengah canvas
       ctx.translate(targetSize / 2, targetSize / 2);
       
-      // Aplikasikan transform yang sama dengan preview
-      ctx.scale(photoTransform.scale, photoTransform.scale);
+      // Aplikasikan transform
       ctx.translate(
         (photoTransform.x / 100) * targetSize,
         (photoTransform.y / 100) * targetSize
       );
+      ctx.scale(photoTransform.scale, photoTransform.scale);
       
-      // Gambar foto user (dengan crop center untuk mempertahankan proporsi)
+      // Gambar foto dengan mempertahankan aspect ratio asli
+      let drawWidth, drawHeight;
       const photoAspect = photoImg.width / photoImg.height;
-      let drawWidth, drawHeight, offsetX, offsetY;
       
       if (photoAspect > 1) {
-        // Foto landscape
-        drawHeight = targetSize;
-        drawWidth = drawHeight * photoAspect;
-        offsetX = -(drawWidth) / 2;
-        offsetY = -targetSize / 2;
-      } else {
-        // Foto portrait atau square
+        // Landscape
         drawWidth = targetSize;
-        drawHeight = drawWidth / photoAspect;
-        offsetX = -targetSize / 2;
-        offsetY = -(drawHeight) / 2;
+        drawHeight = targetSize / photoAspect;
+      } else {
+        // Portrait atau square
+        drawHeight = targetSize;
+        drawWidth = targetSize * photoAspect;
       }
       
-      ctx.drawImage(photoImg, offsetX, offsetY, drawWidth, drawHeight);
+      ctx.drawImage(photoImg, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
       
       // Restore context state
       ctx.restore();
@@ -372,5 +379,5 @@
       }, 'image/png');
     });
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ad0c59ac0754109',t:'MTc2NTU3OTczNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ad0d0506034a131',t:'MTc2NTU4MDE3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
